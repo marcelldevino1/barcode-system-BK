@@ -1,0 +1,5 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {initialData,claim,normalizePhone} from './store.js';
+test('claim creates member, accumulates points, and rejects reuse',()=>{const input={name:'Ayu',phone:'081234567890',email:'',sku:'KMJ-BLK-M',code:'KMJ-BLK-M-DEMO01'};const first=claim(initialData(),input);assert.equal(first.data.members[0].points,15);assert.equal(first.data.logs.length,1);assert.equal(first.data.barcodes[0].is_claimed,true);assert.throws(()=>claim(first.data,input),/sudah pernah/);const second=claim(first.data,{...input,phone:'+62 81234567890',sku:'JNS-BLU-32',code:'JNS-BLU-32-DEMO03'});assert.equal(second.data.members.length,1);assert.equal(second.data.members[0].points,35);assert.equal(second.data.logs.length,2);});
+test('mismatched SKU and invalid phone cannot claim',()=>{const input={name:'Ayu',phone:'081234567890',email:'',sku:'JNS-BLU-32',code:'KMJ-BLK-M-DEMO01'};assert.throws(()=>claim(initialData(),input));assert.throws(()=>claim(initialData(),{...input,sku:'KMJ-BLK-M',phone:'abc'}));assert.equal(normalizePhone('0812-3456-7890'),'6281234567890');});
